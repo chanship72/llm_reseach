@@ -1,0 +1,10 @@
+langchain[all]
+openai
+python-dotenv
+pypdf
+tiktoken
+ctransformers[cuda]
+streamlit
+chromadb
+pysqlite-binary
+pydantic
