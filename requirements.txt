@@ -8,3 +8,5 @@ streamlit
 chromadb
 pysqlite-binary
 pydantic
+PyPDF2
+PyCryptodome
