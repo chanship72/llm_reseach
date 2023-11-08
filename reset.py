@@ -9,6 +9,8 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains import LLMChain
 from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.llms import CTransformers
 # from htmlTemplates import css, bot_template, user_template
 
 def get_pdf_text(pdf_docs):
@@ -31,15 +33,21 @@ def get_text_chunks(text):
     return chunks
 
 
-def get_vectorstore(text_chunks):
-    embeddings = OpenAIEmbeddings()
+def get_vectorstore(text_chunks):    
+    # embeddings = OpenAIEmbeddings()
+    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
     #embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI(temperature=0)
+    # llm = ChatOpenAI(temperature=0)
+    llm = CTransformers(
+                model="llama-2-7b-chat.ggmlv3.q8_0.bin", 
+                model_type="llama",
+                config = {'context_length' : 2048}
+                )
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
@@ -48,8 +56,7 @@ def get_conversation_chain(vectorstore):
         memory=memory
     )
     return conversation_chain
-    
-    
+
 
 def handle_userinput(user_question):
     if st.session_state.conversation is None:
@@ -67,11 +74,6 @@ def handle_userinput(user_question):
             # st.write(user_template.replace(
             #     "{{MSG}}", message.content), unsafe_allow_html=True)
             st.write(message.content)
-            
-
-    
-            
-        
 
 def main():
     load_dotenv()
