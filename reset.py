@@ -1,6 +1,8 @@
 import streamlit as st 
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
+import torch
+from langchain import PromptTemplate, LLMChain
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
 from langchain.vectorstores import FAISS
@@ -11,6 +13,11 @@ from langchain.chains import LLMChain
 from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.llms import CTransformers
+from langchain.prompts import PromptTemplate
+from langchain.llms.huggingface_pipeline import HuggingFacePipeline
+from langchain.chains import ConversationChain
+
+from transformers import pipeline
 # from htmlTemplates import css, bot_template, user_template
 
 def get_pdf_text(pdf_docs):
@@ -42,6 +49,16 @@ def get_vectorstore(text_chunks):
 
 
 def get_conversation_chain(vectorstore):
+    # Define prompt
+    _template = """
+    Given the following conversation and a follow up question, return answer in Korean.
+
+    Chat History:
+    {chat_history}
+    Follow Up Input: {question}
+    Translates English to Korean.
+    """
+    CUSTOM_QUESTION_PROMPT = PromptTemplate.from_template(_template)
     # llm = ChatOpenAI(temperature=0)
     llm = CTransformers(
                 model="llama-2-7b-chat.ggmlv3.q8_0.bin", 
@@ -53,31 +70,52 @@ def get_conversation_chain(vectorstore):
         llm=llm,
         retriever=vectorstore.as_retriever(),
         chain_type="stuff",
-        memory=memory
+        memory=memory,
+        condense_question_prompt=CUSTOM_QUESTION_PROMPT,
+        # combine_docs_chain_kwargs={"prompt": CUSTOM_QUESTION_PROMPT},
+        verbose=True
     )
     return conversation_chain
 
 
 def handle_userinput(user_question):
+
+    translator = pipeline('translation', model='facebook/nllb-200-distilled-600M', device=0, src_lang='eng_Latn', tgt_lang='kor_Hang', max_length=512)
+
+    # text = 'Lockheed Martin Delivers Initial 5G Testbed To U.S. Marine Corps And Begins Mobile Network Experimentation'
+    # output = translator(text, max_length=512)
+    # print(output[0]['translation_text'])
+    
     if st.session_state.conversation is None:
         return
     response = st.session_state.conversation({'question': user_question})
+    
+    output = translator(response["answer"], max_length=512)
+    print(output[0]['translation_text'])
+    print("chat_history:",response['chat_history'])
+    # output = translator(response, max_length=512)[0]['translation_text']
+
     st.session_state.chat_history = response['chat_history']
     chat_history_reversed = reversed(st.session_state.chat_history)
 
-    for i, message in enumerate(chat_history_reversed):
-        if i % 2 == 0:
-            # st.write(bot_template.replace(
-            #     "{{MSG}}", message.content), unsafe_allow_html=True)
-            st.write(message.content)
-        else:
-            # st.write(user_template.replace(
-            #     "{{MSG}}", message.content), unsafe_allow_html=True)
-            st.write(message.content)
+    st.write("Question: ", user_question)
+    st.write(output[0]['translation_text'])
+
+    # for i, message in enumerate(chat_history_reversed):
+    #     if i % 2 == 0:
+    #         # st.write(bot_template.replace(
+    #         #     "{{MSG}}", message.content), unsafe_allow_html=True)
+    #         st.write(message.content)
+    #     else:
+    #         # st.write(user_template.replace(
+    #         #     "{{MSG}}", message.content), unsafe_allow_html=True)
+    #         st.write(message.content)
 
 def main():
     load_dotenv()
-    st.set_page_config(page_title="Chat with multiple PDFs", page_icon=":books:")
+    # st.set_page_config(page_title="Chat with multiple PDFs", page_icon=":books:")
+    st.set_page_config(page_title="Chat with multiple PDFs")
+
     # st.write(css, unsafe_allow_html=True)
     
     if "conversation" not in st.session_state:

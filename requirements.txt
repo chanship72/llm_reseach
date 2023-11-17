@@ -10,3 +10,4 @@ pysqlite-binary
 pydantic
 PyPDF2
 PyCryptodome
+accelerate
