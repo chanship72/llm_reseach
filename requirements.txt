@@ -11,3 +11,7 @@ pydantic
 PyPDF2
 PyCryptodome
 accelerate
+unstructured
+rapidocr_pdf[onnxruntime]
+pdfminer.six
+pdf2image
