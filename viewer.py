@@ -15,7 +15,7 @@ pd.set_option('display.max_columns', 4)
 
 def view_collections(dir):
     st.markdown("### DB Path: %s" % dir)
-    client = chromadb.PersistentClient(path="./data")
+    client = chromadb.PersistentClient(path="./TSLA_vector")
     # embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
     # collection = client.get_collection(name="", embedding_function=embeddings)
     # client = chromadb.Client(Settings(chroma_db_impl="duckdb+parquet",
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     try:
         # args = parser.parse_args()
         # print("Opening database: %s" % args.db)
-        view_collections('./data')
+        view_collections('./TSLA_vector')
     except:
         pass
 
