@@ -3,7 +3,7 @@ openai
 python-dotenv
 pypdf
 tiktoken
-ctransformers[cuda]
+ctransformers
 streamlit
 chromadb
 pysqlite-binary
@@ -15,3 +15,7 @@ unstructured
 rapidocr_pdf[onnxruntime]
 pdfminer.six
 pdf2image
+fitz
+frontend
+camelot-py
+opencv-python
