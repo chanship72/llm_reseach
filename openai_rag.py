@@ -59,7 +59,7 @@ if uploaded_file is not None:
     db = Chroma.from_documents(texts, embeddings_model)
 
     #Question
-    st.header("PDF에게 질문해보세요!!")
+    st.header("강사님께 질문해보세요!!")
     question = st.text_input('질문을 입력하세요')
 
     if st.button('질문하기'):
@@ -69,10 +69,11 @@ if uploaded_file is not None:
             retrieved_docs = chroma_retriever.invoke(
                 question
             )
-            page_content = retrieved_docs[0].page_content.replace("\t","").replace("\n","")
-            metadata = str(retrieved_docs[0].metadata)
-            st.write(f"page_content: :blue[{page_content}]")
-            st.write(f"metadata: :blue[{metadata}]")
+            for i in range(len(retrieved_docs)):
+                page_content = retrieved_docs[i].page_content.replace("\t","").replace("\n","")
+                metadata = str(retrieved_docs[i].metadata)
+                st.write(f"page_content: :blue[{page_content}]")
+                st.write(f"metadata: :blue[{metadata}]")
 
             llm = ChatOpenAI(model_name="gpt-4", temperature=0)
             qa_chain = RetrievalQA.from_chain_type(llm,retriever=chroma_retriever, verbose=True)
