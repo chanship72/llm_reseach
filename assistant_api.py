@@ -8,11 +8,21 @@ import time
 
 # https://generativeai.pub/building-a-streamlit-q-a-app-using-openais-assistant-api-8193f718e7ed
 
-# Set your OpenAI Assistant ID here
-assistant_id = 'asst_enteryourownassistant'
+
 
 # Initialize the OpenAI client (ensure to set your API key in the sidebar within the app)
 client = openai
+
+assistant = client.beta.assistants.create(
+    name="Online Tutor",
+    instructions="You are a personal leturer. Use your knowledge base to best respond to custumer questions.",
+    tools=[{"type": "retrieval"}],
+    model="gpt-4-1106-preview"
+)
+
+# Set your OpenAI Assistant ID here
+# assistant_id = 'asst_enteryourownassistant'
+assistant_id = assistant.id
 
 # Initialize session state variables for file IDs and chat control
 if "file_id_list" not in st.session_state:

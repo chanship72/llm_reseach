@@ -20,3 +20,4 @@ frontend
 camelot-py
 opencv-python
 sentence-transformers
+pdfkit
